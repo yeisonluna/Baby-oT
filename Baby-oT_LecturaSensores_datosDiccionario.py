@@ -99,6 +99,7 @@ while True:                              #Siempre se encuentra dentro del ciclo
     
     for key in datos_bebe:                       #Impresión en pantalla del diccionario
         print(key,":",datos_bebe[key])
+    print("\n")
 #--------------------------Fin del ciclo-------------------------------------------------------#
 
 #--------------------------Fin del programa-----------------------------------------------------#
