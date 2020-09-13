@@ -26,8 +26,7 @@ GPIO.setup(pinLEDmov, GPIO.OUT)  #LED output pin
 
 now = datetime.now()
 sensorTemp = Adafruit_DHT.DHT11
-cont_llora = 0
-datos_bebe = {'Año':[],'Mes':[],'Dia':[],'Hora':[],'Temperatura':[],
+datos_bebe = {'Año':[],'Mes':[],'Dia':[],'Hora':[],'Temperatura':[],  #Creación de diccionario
               'Humedad':[],'EstadoCuna':[],'EstadoSonido':[]}
 #--------------------Fin Inicialización de variables y setup de GPIO---------------------------#
 
