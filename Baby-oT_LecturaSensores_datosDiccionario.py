@@ -26,8 +26,7 @@ GPIO.setup(pinLEDmov, GPIO.OUT)  #LED output pin
 
 now = datetime.now()
 sensorTemp = Adafruit_DHT.DHT11
-datos_bebe = {'Año':[],'Mes':[],'Dia':[],'Hora':[],'Temperatura':[],  #Creación de diccionario
-              'Humedad':[],'EstadoCuna':[],'EstadoSonido':[]}
+datos_bebe = {'Año':[],'Mes':[],'Dia':[],'Hora':[],'Temperatura':[],'Humedad':[],'EstadoCuna':[],'EstadoSonido':[]}
 #--------------------Fin Inicialización de variables y setup de GPIO---------------------------#
 
 
@@ -86,7 +85,7 @@ while True:                              #Siempre se encuentra dentro del ciclo
     datos_bebe['Humedad'].append(hum)     #Se añade al diccionario de datos la humedad actual
 
     est_cuna = tomaMovimiento(pinMovimiento,pinLEDmov) #Se guarda el estado de movimiento del bebé
-        datos_bebe['EstadoCuna'].append(est_cuna) #Se añade al diccionario de datos el estado de mov
+    datos_bebe['EstadoCuna'].append(est_cuna) #Se añade al diccionario de datos el estado de mov
     
     
     if(tomaSonido(pinSonido)):                   #Si el bebé llora o emite un sonido
