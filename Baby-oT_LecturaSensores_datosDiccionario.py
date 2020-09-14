@@ -99,6 +99,15 @@ while True:                              #Siempre se encuentra dentro del ciclo
     for key in datos_bebe:                       #Impresión en pantalla del diccionario
         print(key,":",datos_bebe[key])
     print("\n")
+    
+    #Si se quieren ver únicamente los valores actuales:
+    
+    #print("Datos actuales: \n")
+    #print("Temperatura: ", temp)
+    #print("Humedad: ",hum)
+    #print("Estado Cuna: ", est_cuna)
+    #print("Estado Sonido: ", est_sonido)
+    #print("\n")
 #--------------------------Fin del ciclo-------------------------------------------------------#
 
 #--------------------------Fin del programa-----------------------------------------------------#
