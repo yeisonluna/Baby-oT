@@ -28,17 +28,17 @@ GPIO.setmode(GPIO.BCM)
 pinTemperatura = 23
 pinMovimiento = 27
 pinSonido = 4
-pinLEDmov = 17
+
 
 GPIO.setup(pinMovimiento, GPIO.IN)   #Pin del sensor de movimiento
 GPIO.setup(pinSonido,GPIO.IN)
-GPIO.setup(pinLEDmov, GPIO.OUT)  #LED output pin
+
 
 now = datetime.now()
 sensorTemp = Adafruit_DHT.DHT11
 
 # Creacion topic para envio a ThingSpeak usando protocolo MQTT
-topic='channels/'+str(1210618)+'/publish/'+str(J3YZTZYWGGVSNCP7)
+topic='channels/'+str(1210618)+'/publish/'+str('J3YZTZYWGGVSNCP7')
 mqttHost = 'mqtt.thingspeak.com'
 
 #--------------------Fin Inicialización de variables y setup de GPIO---------------------------#
@@ -78,14 +78,13 @@ def analogInput(channel):
 #--------------------Fin Función analogInput---------------------------------------------------# 
 
 #--------------------Función tomaMovimiento----------------------------------------------------#          
-def tomaMovimiento(pin,pin_led):    
+def tomaMovimiento(pin):    
     if(GPIO.input(pin)==False):                #Si el pin del sensor está en False o 0
-        estado = "Tu bebé no está en la cuna"  #La variable estado notifica que el bebé no está
-        GPIO.output(pin_led, 0)                #Apaga el LED
+        estado = 0  #La variable estado notifica que el bebé no está
+    
         
     elif(GPIO.input(pin)==True):               #En cambio si el pin del sensor está en 1
-        estado = "Tu bebé está en la cuna"     #La variable estado notifica que el bebé está
-        GPIO.output(pin_led, 1)                #Enciende el LED
+        estado = 1     #La variable estado notifica que el bebé está
     return estado
  #--------------------Fin Función tomaMovimiento-----------------------------------------------#  
     
@@ -96,20 +95,23 @@ def tomaMovimiento(pin,pin_led):
 
 
 #------------------------ Inicio del ciclo infinito -------------------------------------------#
-while True:   
+while True:
+    
+    
     sonido = analogInput(0)
-    sonido = interp(output,[0,1023],[0,100])
-    movimiento = tomaMovimiento(pinMovimiento,pinLEDmov) #Se guarda el estado de movimiento del bebé
+    sonido = interp(sonido,[0,1023],[0,100])
+    movimiento = tomaMovimiento(pinMovimiento) #Se guarda el estado de movimiento del bebé
     temperatura,humedad = tomaTemperatura(sensorTemp,pinTemperatura)  
     payload='field1='+str(temperatura)+'&field2='+str(humedad)+'&field3='+str(sonido)+'&field4='+str(movimiento)
 
     try:
         publish.single(topic, payload, hostname=mqttHost)
     except:
-        print "except: problemas envio datos MQTT"
-    break
+        print("except: problemas envio datos MQTT")
+        break
    
     sleep(15)    
 #--------------------------Fin del ciclo-------------------------------------------------------#
 
 #--------------------------Fin del programa-----------------------------------------------------#
+
