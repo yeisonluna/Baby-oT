@@ -8,11 +8,21 @@ import Adafruit_DHT
 import time
 import RPi.GPIO as GPIO
 from datetime import datetime
+import spidev
+from numpy import interp
+from time import sleep
+import paho.mqtt.publish as publish
+import time
 #--------------------------Fin de importación de bibliotecas----------------------------------#
 
 
 #--------------------Inicialización de variables y setup de GPIO------------------------------#
 GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+
+spi = spidev.SpiDev()
+spi.open(0,0)
+
 GPIO.setmode(GPIO.BCM)
 
 pinTemperatura = 23
@@ -26,7 +36,11 @@ GPIO.setup(pinLEDmov, GPIO.OUT)  #LED output pin
 
 now = datetime.now()
 sensorTemp = Adafruit_DHT.DHT11
-datos_bebe = {'Año':[],'Mes':[],'Dia':[],'Hora':[],'Temperatura':[],'Humedad':[],'EstadoCuna':[],'EstadoSonido':[]}
+
+# Creacion topic para envio a ThingSpeak usando protocolo MQTT
+topic='channels/'+str(1210618)+'/publish/'+str(J3YZTZYWGGVSNCP7)
+mqttHost = 'mqtt.thingspeak.com'
+
 #--------------------Fin Inicialización de variables y setup de GPIO---------------------------#
 
 
@@ -55,6 +69,13 @@ def tomaSonido(pin):
     return bebe_llora
 #--------------------Fin Función tomaSonido----------------------------------------------------# 
 
+#--------------------Función analogInput-------------------------------------------------------#    
+def analogInput(channel):
+    spi.max_speed_hz = 1350000
+    adc = spi.xfer2([1,(8+channel)<<4,0])
+    data = ((adc[1]&3)<<8)+adc[2]
+    return data
+#--------------------Fin Función analogInput---------------------------------------------------# 
 
 #--------------------Función tomaMovimiento----------------------------------------------------#          
 def tomaMovimiento(pin,pin_led):    
@@ -69,45 +90,26 @@ def tomaMovimiento(pin,pin_led):
  #--------------------Fin Función tomaMovimiento-----------------------------------------------#  
     
     
-#-------------------Fin Creación de funciones de toma de datos de los sensores-----------------#    
+#-------------------Fin Creación de funciones de toma de datos de los sensores-----------------#  
+
+
+
 
 #------------------------ Inicio del ciclo infinito -------------------------------------------#
-while True:                              #Siempre se encuentra dentro del ciclo
-    
-    datos_bebe['Año'].append(now.year)       #Se añade al diccionario de datos el año actual
-    datos_bebe['Mes'].append(now.month)      #Se añade al diccionario de datos el mes actual
-    datos_bebe['Dia'].append(now.day)        #Se añade al diccionario de datos el dia actual
-    datos_bebe['Hora'].append([now.hour,now.minute]) #Se añade al diccionario la hora actual
-    
-    temp,hum = tomaTemperatura(sensorTemp,pinTemperatura)  #En las variables temp y hum se guardan
-                                                           #temperatura y humedad, respectivamente
-    datos_bebe['Temperatura'].append(temp)  #Se añade al diccionario de datos la temp. actual
-    datos_bebe['Humedad'].append(hum)     #Se añade al diccionario de datos la humedad actual
+while True:   
+    sonido = analogInput(0)
+    sonido = interp(output,[0,1023],[0,100])
+    movimiento = tomaMovimiento(pinMovimiento,pinLEDmov) #Se guarda el estado de movimiento del bebé
+    temperatura,humedad = tomaTemperatura(sensorTemp,pinTemperatura)  
+    payload='field1='+str(temperatura)+'&field2='+str(humedad)+'&field3='+str(sonido)+'&field4='+str(movimiento)
 
-    est_cuna = tomaMovimiento(pinMovimiento,pinLEDmov) #Se guarda el estado de movimiento del bebé
-    datos_bebe['EstadoCuna'].append(est_cuna) #Se añade al diccionario de datos el estado de mov
-    
-    
-    if(tomaSonido(pinSonido)):                   #Si el bebé llora o emite un sonido
-        est_sonido = "¡Tu bebé te necesita!"     #Se notifica que el bebé requiere algo
-    else:                                        #Si no
-        est_sonido = "Tu bebé está en silencio"  #Se notifica que el bebé está en silencio
-        
-    datos_bebe['EstadoSonido'].append(est_sonido) #Se añade al diccionario de datos el estado de
-                                                  #sonido
-    
-    for key in datos_bebe:                       #Impresión en pantalla del diccionario
-        print(key,":",datos_bebe[key])
-    print("\n")
-    
-    #Si se quieren ver únicamente los valores actuales:
-    
-    #print("Datos actuales: \n")
-    #print("Temperatura: ", temp)
-    #print("Humedad: ",hum)
-    #print("Estado Cuna: ", est_cuna)
-    #print("Estado Sonido: ", est_sonido)
-    #print("\n")
+    try:
+        publish.single(topic, payload, hostname=mqttHost)
+    except:
+        print "except: problemas envio datos MQTT"
+    break
+   
+    sleep(15)    
 #--------------------------Fin del ciclo-------------------------------------------------------#
 
 #--------------------------Fin del programa-----------------------------------------------------#
