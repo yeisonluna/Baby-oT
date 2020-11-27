@@ -13,7 +13,7 @@ GPIO.setup(25, GPIO.OUT)
 
     while True:
 
-   	baseURL = 'https://api.thingspeak.com/channels/1210618/fields/1/last' # xxxx = your channel id
+   	baseURL = 'https://api.thingspeak.com/channels/1244148/fields/1/last' # xxxx = your channel id
 	
         try:
 		f = requests.get(baseURL)
