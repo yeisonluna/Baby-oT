@@ -30,12 +30,16 @@ GPIO.setmode(GPIO.BCM)
 pinTemperatura = 23
 pinMovimiento = 27
 pinSonido = 4
-pinMotor = 26
+pinMotor1 = 26
+pinMotor2 = 13
+pinEnable = 25
 
 
 GPIO.setup(pinMovimiento, GPIO.IN)   #Pin del sensor de movimiento
 GPIO.setup(pinSonido,GPIO.IN)
-GPIO.setup(pinMotor,GPIO.OUT)
+GPIO.setup(pinMotor1,GPIO.OUT)
+GPIO.setup(pinMotor2,GPIO.OUT)
+GPIO.setup(pinEnable,GPIO.OUT)
 
 
 now = datetime.now()
@@ -114,10 +118,12 @@ while True:
         print(f.text)   #get data from url
             
         if f.text == '0':
-            GPIO.output(pinMotor,0) # motor off
+            GPIO.output(pinEnable,0) # motor off
             print("motor off!!!")
         elif f.text == '1':
-            GPIO.output(pinMotor,1)  # motor on
+            GPIO.output(pinMotor1,1) 
+            GPIO.output(pinMotor2,0) 
+            GPIO.output(pinEnable,1) 
             print ("motor on!!!")                
         else:
             print("not found command")
