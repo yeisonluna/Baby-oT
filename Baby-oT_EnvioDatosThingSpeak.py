@@ -13,6 +13,8 @@ from numpy import interp
 from time import sleep
 import paho.mqtt.publish as publish
 import time
+import requests
+import string
 #--------------------------Fin de importación de bibliotecas----------------------------------#
 
 
@@ -28,10 +30,12 @@ GPIO.setmode(GPIO.BCM)
 pinTemperatura = 23
 pinMovimiento = 27
 pinSonido = 4
+pinMotor = 26
 
 
 GPIO.setup(pinMovimiento, GPIO.IN)   #Pin del sensor de movimiento
 GPIO.setup(pinSonido,GPIO.IN)
+GPIO.setup(pinMotor,GPIO.OUT)
 
 
 now = datetime.now()
@@ -97,7 +101,7 @@ def tomaMovimiento(pin):
 #------------------------ Inicio del ciclo infinito -------------------------------------------#
 while True:
     
-    
+    baseURL = 'https://api.thingspeak.com/channels/1244148/fields/1/last'
     sonido = analogInput(0)
     sonido = interp(sonido,[0,1023],[0,100])
     movimiento = tomaMovimiento(pinMovimiento) #Se guarda el estado de movimiento del bebé
@@ -106,12 +110,25 @@ while True:
 
     try:
         publish.single(topic, payload, hostname=mqttHost)
+        f = requests.get(baseURL)
+        print(f.text)   #get data from url
+            
+        if f.text == '0':
+            GPIO.output(pinMotor,0) # motor off
+            print("motor off!!!")
+        elif f.text == '1':
+            GPIO.output(pinMotor,1)  # motor on
+            print ("motor on!!!")                
+        else:
+            print("not found command")
+            print('===========================================')  
+            f.close()
+       
     except:
-        print("except: problemas envio datos MQTT")
+        print("except: problemas envio datos MQTT y actuador")
         break
    
     sleep(15)    
 #--------------------------Fin del ciclo-------------------------------------------------------#
 
 #--------------------------Fin del programa-----------------------------------------------------#
-
