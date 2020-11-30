@@ -33,6 +33,7 @@ pinSonido = 4
 pinMotor1 = 26
 pinMotor2 = 13
 pinEnable = 25
+pinLED = 6
 
 
 GPIO.setup(pinMovimiento, GPIO.IN)   #Pin del sensor de movimiento
@@ -40,6 +41,7 @@ GPIO.setup(pinSonido,GPIO.IN)
 GPIO.setup(pinMotor1,GPIO.OUT)
 GPIO.setup(pinMotor2,GPIO.OUT)
 GPIO.setup(pinEnable,GPIO.OUT)
+GPIO.setup(pinLED,GPIO.OUT)
 
 
 now = datetime.now()
@@ -109,7 +111,13 @@ while True:
     sonido = analogInput(0)
     sonido = interp(sonido,[0,1023],[0,100])
     movimiento = tomaMovimiento(pinMovimiento) #Se guarda el estado de movimiento del bebé
-    temperatura,humedad = tomaTemperatura(sensorTemp,pinTemperatura)  
+    temperatura,humedad = tomaTemperatura(sensorTemp,pinTemperatura)
+    if (temperatura >= 25):
+        GPIO.output(pinLED,1)
+    else:
+        GPIO.output(pinLED,0)
+        
+        
     payload='field1='+str(temperatura)+'&field2='+str(humedad)+'&field3='+str(sonido)+'&field4='+str(movimiento)
 
     try:
